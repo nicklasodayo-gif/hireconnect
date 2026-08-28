@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# environment files (keep *.example)
+.env
+.env.local
+.env.*.local
+
+# databases / runtime data
+*.db
+*.sqlite
+*.sqlite3
+server/uploads/
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
