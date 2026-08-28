@@ -1,0 +1,65 @@
+# Render Blueprint for HireConnect — deploys the full stack in one click.
+#
+# Use: Render Dashboard → "New +" → "Blueprint" → pick this repo.
+# You will be prompted for the two `sync: false` values below:
+#   1. On hireconnect-api:  ALLOWED_ORIGINS = your frontend URL,
+#      e.g. https://hireconnect-web.onrender.com
+#   2. On hireconnect-web:  VITE_API_BASE_URL = your API URL,
+#      e.g. https://hireconnect-api.onrender.com
+# (The actual URLs depend on service-name availability on onrender.com —
+#  Render appends a random suffix if a name is taken; copy whatever
+#  URL Render shows for each service into the other service's prompt.)
+#
+# The API's SQLite database needs the persistent disk below, which requires
+# a paid instance type (starter). Seed the demo data once after first deploy
+# via the Render Shell:
+#   node --experimental-strip-types --experimental-sqlite src/seed.ts
+
+services:
+  # ---- Backend API (Docker, repo-root Dockerfile, zero-dependency Node) ----
+  - type: web
+    name: hireconnect-api
+    runtime: docker
+    branch: main
+    plan: starter
+    healthCheckPath: /api/health
+    disk:
+      name: hireconnect-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/hireconnect.db
+      # Do NOT set PORT — Render injects it and src/index.ts binds to it.
+      # CORS allowlist: comma-separated frontend origins, no trailing slash.
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # Only needed if you run the one-time seed with non-default passwords.
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_DEFAULT_PASSWORD
+        sync: false
+
+  # ---- Frontend (Vite + TypeScript build served as a static site) ----
+  - type: web
+    name: hireconnect-web
+    runtime: static
+    branch: main
+    rootDir: web-vite
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Build-time API base URL — must match the deployed API's public URL.
+      - key: VITE_API_BASE_URL
+        sync: false
+    # Safety net for client-side routing (the app uses hash routing, so
+    # this rarely triggers, but it keeps deep links working if the router
+    # is ever switched to the History API).
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
