@@ -21,8 +21,8 @@ const server = http.createServer(async (req, res) => {
   if (!handled) sendJson(res, 404, { error: "Not found" });
 });
 
-server.listen(PORT, () => {
-  console.log(`HireConnect API listening on http://localhost:${PORT} (db: ${DB_PATH})`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`HireConnect API listening on port ${PORT} (db: ${DB_PATH})`);
 });
 
 // Graceful shutdown so container/process-manager restarts don't drop
