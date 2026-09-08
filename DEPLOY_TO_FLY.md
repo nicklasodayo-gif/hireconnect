@@ -47,4 +47,20 @@ Notes
 
 - If you prefer a single-host solution, you can deploy both backend and built frontend on Fly (serve static `dist` via a small static server), or use Render (persistent disk requires Starter plan).
 - Fly's free tier limits may change; check Fly pricing for volumes and usage.
-- If you want, I can add a GitHub Action to automatically deploy the frontend to Vercel and the backend to Fly on push.
+If you want, I can add a GitHub Action to automatically deploy the frontend to Vercel and the backend to Fly on push.
+
+GitHub Actions automation
+
+1) Add these repository secrets in GitHub (Settings → Secrets & variables → Actions):
+	- `FLY_API_TOKEN` — your Fly API token (`fly auth token`)
+	- `FLY_APP_NAME` — the Fly app name (e.g. `hireconnect-api`)
+	- `FLY_REGION` — region code for volumes (default `iad`)
+	- `VERCEL_TOKEN` — Vercel personal token
+	- `VERCEL_ORG_ID` — Vercel organization id
+	- `VERCEL_PROJECT_ID` — Vercel project id
+
+2) Workflows added to `.github/workflows/`:
+	- `deploy-backend.yml` — builds and deploys the backend Docker image to Fly on push to `main`.
+	- `deploy-frontend.yml` — builds `web-vite` and deploys to Vercel on push to `main`.
+
+3) After setting the secrets, pushing to `main` will automatically deploy both services.
